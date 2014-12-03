@@ -9,7 +9,8 @@ lifedata
 - [rescuetime](https://www.rescuetime.com/developers)
 - [bong](http://www.bong.cn/)
 - [xiaomi](http://www.mi.com/shouhuan)
-- .........
+- [Nike](https://developer.nike.com/index.html)
+- [Moves](https://dev.moves-app.com/)
 
 # TODO
 - This projects will display with framework and other plugins. One device is a plugin which include front end and back end
