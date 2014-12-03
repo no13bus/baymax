@@ -11,6 +11,7 @@ lifedata
 - [xiaomi](http://www.mi.com/shouhuan)
 - [Nike](https://developer.nike.com/index.html)
 - [Moves](https://dev.moves-app.com/)
+- [Withings](http://oauth.withings.com/api)
 - ..............
 
 # TODO
