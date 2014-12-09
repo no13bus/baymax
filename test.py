@@ -24,6 +24,7 @@ for x in d['statuses']:
     print x['text']
     print x['created_at']
 
+
 #### emotions analysis
 from bosonnlp import BosonNLP
 BOSON_KEY = 'DLg8aedI.2485.ay8NOHblggqH'
