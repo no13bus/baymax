@@ -37,4 +37,4 @@ if __name__ == '__main__':
 
 # http://developer.azumio.com/azumio-api
 # why requests can not post form data request??? it's not work
-# webhook is fun
+# webhook is fun. flask. request.data
