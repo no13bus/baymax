@@ -1,0 +1,10 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = "Reauthenticate" %}
+
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<h2>Reauthenticate</h2>
+{{ render_form(url_for('frontend.reauth'), form)}}
+{% endblock %}

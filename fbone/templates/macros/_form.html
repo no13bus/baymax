@@ -1,0 +1,163 @@
+{% macro render_checkbox(field) %}
+<div class="checkbox{% if field.errors %} has-error{% endif %}">
+    <label for="{{ field.id }}">
+        {{ field }}{{ field.label.text }}
+    </label>
+    <span class="help-inline">{{ field.description }}</span>
+    {% if field.errors -%}
+    <ul class="help-block">
+        {% for error in field.errors -%}
+        <li>{{ error|e }}</li>
+        {%- endfor %}
+    </ul>
+    {%- endif %}
+</div>
+{% endmacro%}
+
+{% macro render_radio(field) %}
+<div class="form-group{% if field.errors %} has-error{% endif %}">
+    {{ field.label(class_="control-label") }}
+    <div class="">
+        {% for subfield in field -%}
+        <label for="{{ subfield.id }}" class="radio-inline">
+            {{ subfield }} {{ subfield.label.text }}
+        </label>
+        {%- endfor %}
+        <span class="help-inline">{{ field.description }}</span>
+        {% if field.errors -%}
+        <ul class="help-block">
+            {% for error in field.errors -%}
+            <li>{{ error }}</li>
+            {%- endfor %}
+        </ul>
+        {%- endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_datepicker(field) %}
+<div class="form-group{% if field.errors %} has-error{% endif %}">
+    <label class="control-label" 
+        for="{{ field.id }}">
+        {{ field.label }}
+    </label>
+    <div class="">
+        {{ field() }}
+        <span class="help-inline">{{ field.description }}</span>
+        {% if field.errors -%}
+        <ul class="help-block">
+            {% for error in field.errors -%}
+            <li>{{ error }}</li>
+            {%- endfor %}
+        </ul>
+        {%- endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_textarea(field) %}
+<div class="form-group{% if field.errors %} has-error{% endif %}">
+    <label class="control-label" 
+        for="{{ field.id }}">
+        {{ field.label }}
+    </label>
+    <div class="">
+        {{ field(class_="form-control", rows="4") }}
+        <span class="help-inline">{{ field.description }}</span>
+        {% if field.errors -%}
+        <ul class="help-block">
+            {% for error in field.errors -%}
+            <li>{{ error }}</li>
+            {%- endfor %}
+        </ul>
+        {%- endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_file(field) %}
+<div class="form-group{% if field.errors %} has-error{% endif %}">
+    <label class="control-label" 
+        for="{{ field.id }}">
+        {{ field.label }}
+    </label>
+    <div class="">
+        {{ field }}
+        <span class="help-inline">{{ field.description }}</span>
+        {% if field.errors -%}
+        <ul class="help-block">
+            {% for error in field.errors -%}
+            <li>{{ error }}</li>
+            {%- endfor %}
+        </ul>
+        {%- endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_input(field) %}
+<div class="form-group{% if field.errors %} has-error{% endif %}">
+    <label class="control-label" 
+        for="{{ field.id }}">
+        {{ field.label }}
+    </label>
+    <div class="">
+        {{ field(class_="form-control") }}
+        <span class="help-inline">{{ field.description }}</span>
+        {% if field.errors -%}
+        <ul class="help-block">
+            {% for error in field.errors -%}
+            <span class="help-block error">{{ error }}</span>
+            {%- endfor %}
+        </ul>
+        {%- endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_action(field) %}
+<div class="form-group">
+    <div class="form-actions">
+        {{ field(class_="btn btn-primary") }}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_form(url, form, horizontal=False, legend=None, confirm_msg=None, formid=None) %}
+{% set idattr = "id=" + formid if formid else "" %}
+<form {{idattr}} class="{% if horizontal %}form-horizontal{% endif %}" method="POST" action="{{ url }}"
+    {% if confirm_msg %}onsubmit='return confirm("{{ confirm_msg }}");' {% endif %} 
+    {% if form.multipart %}enctype="multipart/form-data"{% endif %} >
+    {{ form.hidden_tag() }}
+        {% if legend %}
+        <legend>{{ legend|safe }}</legend>
+        {% endif %}
+        {% set focus = True %}
+        {% for field in form %}
+            {% if field.type != "HiddenField" and field.type != "CSRFTokenField" %}
+                {% if field.type == "RadioField" %}
+                    {{ render_radio(field) }}
+                {% elif field.type == "BooleanField" %}
+                    {{ render_checkbox(field) }}
+                {% elif field.type == "SubmitField" %}
+                    {{ render_action(field) }}
+                {% elif field.type == "TextAreaField" %}
+                    {{ render_textarea(field) }}
+                {% elif field.type == "DateField" %}
+                    {{ render_datepicker(field) }}
+                {% elif field.type == "FileField" %}
+                    {{ render_file(field) }}
+                {% elif field.type == "TextField" %}
+                    {% if focus %}
+                        {{ render_input(field) }}
+                        {% set focus = False %}
+                    {% else %}
+                        {{ render_input(field) }}
+                    {% endif %}
+                {% else %}
+                    {{ render_input(field) }}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+</form>
+{% endmacro %}

@@ -1,3 +1,0 @@
-mechanize
-flask
-requests
