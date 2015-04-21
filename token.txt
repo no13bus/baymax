@@ -1,0 +1,17 @@
+fitbit
+
+Client (Consumer) Key
+0ad642de85bc4e30a5c1e0aca8ec8355
+
+Client (Consumer) Secret
+018285a1459844c082e9e0711328bd66
+
+Temporary Credentials (Request Token) URL
+https://api.fitbit.com/oauth/request_token
+
+Token Credentials (Access Token) URL
+https://api.fitbit.com/oauth/access_token
+
+Authorize URL
+https://www.fitbit.com/oauth/authorize
+

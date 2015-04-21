@@ -10,7 +10,6 @@ from ..monitor import Monitor, token
 from ..utils import get_current_time, SEX_TYPE, STRING_LEN
 from .constants import USER, USER_ROLE, ADMIN, INACTIVE, USER_STATUS
 
-
 # 默认的话 是驼峰命名 然后使用他们的小写字母 中间使用_连接
 class UserDetail(db.Model):
     # __tablename__ = 'user_details'
