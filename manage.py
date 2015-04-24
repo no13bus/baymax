@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flaskext.script import Manager
+from flask.ext.script import Manager
 
 from fbone import create_app
 from fbone.extensions import db
