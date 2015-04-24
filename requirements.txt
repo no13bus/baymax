@@ -1,0 +1,8 @@
+flask
+requests
+flask-script
+flask-babel
+flask-login
+flask-mail
+flask-cache
+flask-openid

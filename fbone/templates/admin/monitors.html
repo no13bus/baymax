@@ -1,0 +1,28 @@
+{% extends "admin/layout.html" %}
+
+{% block body %}
+<div class="container">
+    <h2>Monitor</h2>
+    <table class='table table-bordered table-hover'>
+        <thead>
+            <tr>
+                <th>name</th>
+                <th>url</th>
+                <th>introduction</th>
+            </tr>
+        </thead>
+        {% if monitors %}
+            {% for monitor in monitors %}
+            <tr>
+                <td>{{ monitor.name }}</td>
+                <td><a target="_blank" href="{{ monitor.url }}">{{ monitor.url }}</a></td>
+                <td>{{ monitor.introduction }}</td>
+
+            </tr>
+            {% endfor %}
+        {% else %}
+            <h4>没有监控app</h4>
+        {% endif %}
+    </table>
+</div>
+{% endblock %}
