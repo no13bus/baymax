@@ -1,4 +1,4 @@
 __author__ = 'no13bus'
 
-from fitbit import FitbitOauthClient
-from withings import WithingsOauthClient
+from fitbit import FitbitAuth, FitbitApi
+from withings import WithingsAuth, WithingsApi

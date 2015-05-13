@@ -1,155 +1,153 @@
 # -*- coding: utf-8 -*-
+#
+"""
+Python library for the Withings API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Withings Body metrics Services API
+<http://www.withings.com/en/api/wbsapiv2>
+Uses Oauth 1.0 to authentify. You need to obtain a consumer key
+and consumer secret from Withings by creating an application
+here: <https://oauth.withings.com/partner/add>
+Usage:
+auth = WithingsAuth(CONSUMER_KEY, CONSUMER_SECRET)
+authorize_url = auth.get_authorize_url()
+print "Go to %s allow the app and copy your oauth_verifier" % authorize_url
+oauth_verifier = raw_input('Please enter your oauth_verifier: ')
+creds = auth.get_credentials(oauth_verifier)
+client = WithingsApi(creds)
+measures = client.get_measures(limit=1)
+print "Your last measured weight: %skg" % measures[0].weight
+"""
+
+__title__ = 'withings'
+__version__ = '0.1'
+__author__ = 'Maxime Bouroumeau-Fuseau'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2012 Maxime Bouroumeau-Fuseau'
+
+# __all__ = ['WithingsCredentials', 'WithingsAuth', 'WithingsApi',
+#            'WithingsMeasures', 'WithingsMeasureGroup']
+
 import requests
+from requests_oauthlib import OAuth1, OAuth1Session
 import json
 import datetime
-try:
-    from urllib.parse import urlencode
-except ImportError:
-    # Python 2.x
-    from urllib import urlencode
-from requests_oauthlib import OAuth1, OAuth1Session
-from .exceptions import (BadResponse, DeleteError, HTTPBadRequest,
-                               HTTPUnauthorized, HTTPForbidden,
-                               HTTPServerError, HTTPConflict, HTTPNotFound,
-                               HTTPTooManyRequests)
 
-class FitbitOauthClient(object):
-    API_ENDPOINT = "https://api.fitbit.com"
-    AUTHORIZE_ENDPOINT = "https://www.fitbit.com"
+
+class FitbitAuth(object):
+    URL = 'https://api.fitbit.com'
+
+    def __init__(self, consumer_key, consumer_secret):
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.oauth_token = None
+        self.oauth_secret = None
+
+    # 得到url
+    def get_authorize_url(self):
+        oauth = OAuth1Session(self.consumer_key,
+                              client_secret=self.consumer_secret)
+
+        tokens = oauth.fetch_request_token('%s/oauth/request_token' % self.URL)
+        print tokens
+        self.oauth_token = tokens['oauth_token']
+        self.oauth_secret = tokens['oauth_token_secret']
+
+        return oauth.authorization_url('%s/oauth/authorize' % self.URL)
+
+    def get_credentials(self, oauth_verifier):
+        oauth = OAuth1Session(self.consumer_key,
+                              client_secret=self.consumer_secret,
+                              resource_owner_key=self.oauth_token,
+                              resource_owner_secret=self.oauth_secret,
+                              verifier=oauth_verifier)
+        tokens = oauth.fetch_access_token('%s/oauth/access_token' % self.URL)
+        print tokens
+        # 这个返回的其实就是个dict
+        # return WithingsCredentials(access_token=tokens['oauth_token'],
+        #                            access_token_secret=tokens['oauth_token_secret'],
+        #                            consumer_key=self.consumer_key,
+        #                            consumer_secret=self.consumer_secret,
+        #                            user_id=tokens['userid'])
+        return dict(access_token=tokens['oauth_token'],
+                   access_token_secret=tokens['oauth_token_secret'],
+                   consumer_key=self.consumer_key,
+                   consumer_secret=self.consumer_secret,
+                   user_id=tokens['encoded_user_id'])
+
+
+class FitbitApi(object):
+    URL = 'https://api.fitbit.com'
+    # US = 'en_US'
+    # METRIC = 'en_UK'
     API_VERSION = 1
 
-    request_token_url = "%s/oauth/request_token" % API_ENDPOINT
-    access_token_url = "%s/oauth/access_token" % API_ENDPOINT
-    authorization_url = "%s/oauth/authorize" % AUTHORIZE_ENDPOINT
+    def __init__(self, **kwargs):
+        # self.credentials = kwargs
+        self.oauth = OAuth1(unicode(kwargs['consumer_key']),
+                            unicode(kwargs['consumer_secret']),
+                            unicode(kwargs['access_token']),
+                            unicode(kwargs['access_token_secret']),
+                            signature_type='auth_header')
+        self.client = requests.Session()
+        # 给requests实例 添加oauth认证
+        self.client.auth = self.oauth
+        # self.client.params.update({'userid': kwargs['user_id']})
+        self.user_id = kwargs['user_id'] if kwargs.get('user_id', None) else '-'
+        # system 如果不是 en_US 和 en_UK 那么就是采用公制的常规单位
+        self.system = kwargs['system'] if kwargs.get('system', None) else None
 
-    def __init__(self, client_key, client_secret, resource_owner_key=None,
-                 resource_owner_secret=None, user_id=None, callback_uri=None,
-                 *args, **kwargs):
-        """
-        Create a FitbitOauthClient object. Specify the first 5 parameters if
-        you have them to access user data. Specify just the first 2 parameters
-        to access anonymous data and start the set up for user authorization.
-        Set callback_uri to a URL and when the user has granted us access at
-        the fitbit site, fitbit will redirect them to the URL you passed.  This
-        is how we get back the magic verifier string from fitbit if we're a web
-        app. If we don't pass it, then fitbit will just display the verifier
-        string for the user to copy and we'll have to ask them to paste it for
-        us and read it that way.
-        """
-
-        self.session = requests.Session()
-        self.client_key = client_key
-        self.client_secret = client_secret
-        self.resource_owner_key = resource_owner_key
-        self.resource_owner_secret = resource_owner_secret
-        if user_id:
-            self.user_id = user_id
-        params = {'client_secret': client_secret}
-        if callback_uri:
-            params['callback_uri'] = callback_uri
-        if self.resource_owner_key and self.resource_owner_secret:
-            params['resource_owner_key'] = self.resource_owner_key
-            params['resource_owner_secret'] = self.resource_owner_secret
-        self.oauth = OAuth1Session(client_key, **params)
-
-    def _request(self, method, url, **kwargs):
-        """
-        A simple wrapper around requests.
-        """
-        return self.session.request(method, url, **kwargs)
-
-    def make_request(self, url, data={}, method=None, **kwargs):
-        """
-        Builds and makes the OAuth Request, catches errors
-        https://wiki.fitbit.com/display/API/API+Response+Format+And+Errors
-        """
-        if not method:
-            method = 'POST' if data else 'GET'
-        auth = OAuth1(
-            self.client_key, self.client_secret, self.resource_owner_key,
-            self.resource_owner_secret, signature_type='auth_header')
-        response = self._request(method, url, data=data, auth=auth, **kwargs)
-
-        if response.status_code == 401:
-            raise HTTPUnauthorized(response)
-        elif response.status_code == 403:
-            raise HTTPForbidden(response)
-        elif response.status_code == 404:
-            raise HTTPNotFound(response)
-        elif response.status_code == 409:
-            raise HTTPConflict(response)
-        elif response.status_code == 429:
-            exc = HTTPTooManyRequests(response)
-            exc.retry_after_secs = int(response.headers['Retry-After'])
-            raise exc
-
-        elif response.status_code >= 500:
-            raise HTTPServerError(response)
-        elif response.status_code >= 400:
-            raise HTTPBadRequest(response)
+    def request(self, service, params=None, method='GET'):
+        if params is None:
+            params = {}
+        headers = {'Accept-Language': self.system}
+        r = self.client.request(method, '%s/%s/%s' % (self.URL, self.API_VERSION, service), params=params, headers=headers)
+        response = json.loads(r.content)
+        # if response['status'] != 0:
+        #     raise Exception("Error code %s" % response['status'])
         return response
 
-    def fetch_request_token(self):
-        """
-        Step 1 of getting authorized to access a user's data at fitbit: this
-        makes a signed request to fitbit to get a token to use in step 3.
-        Returns that token.}
-        """
+    # 好多参数是可选的 这个要注意 这个也是为什么选择**kwargs的原因
+    # get_user_profile(user_id=3333)  or get_user_profile()
+    def get_user_profile(self, **kwargs):
+        user_id = kwargs.get('user_id', None)
+        if not user_id:
+            user_id = '-'
+        service = "user/%s/profile.json" % user_id
+        res_body = self.request(service)
+        return res_body
 
-        token = self.oauth.fetch_request_token(self.request_token_url)
-        self.resource_owner_key = token.get('oauth_token')
-        self.resource_owner_secret = token.get('oauth_token_secret')
-        return token
+    # /1/user/228TQ4/sleep/date/2010-02-25.json
+    def get_sleep(self, **kwargs):
+        user_id = kwargs.get('user_id', None)
+        date_string = kwargs['date']
+        if not user_id:
+            user_id = '-'
+        service = "user/%s/sleep/date/%s.json" % (user_id, date_string)
+        res_body = self.request(service)
+        return res_body
 
-    def authorize_token_url(self, **kwargs):
-        """Step 2: Return the URL the user needs to go to in order to grant us
-        authorization to look at their data.  Then redirect the user to that
-        URL, open their browser to it, or tell them to copy the URL into their
-        browser.  Allow the client to request the mobile display by passing
-        the display='touch' argument.
-        """
 
-        return self.oauth.authorization_url(self.authorization_url, **kwargs)
-
-    def fetch_access_token(self, verifier, token=None):
-        """Step 3: Given the verifier from fitbit, and optionally a token from
-        step 1 (not necessary if using the same FitbitOAuthClient object) calls
-        fitbit again and returns an access token object. Extract the needed
-        information from that and save it to use in future API calls.
-        """
-        if token:
-            self.resource_owner_key = token.get('oauth_token')
-            self.resource_owner_secret = token.get('oauth_token_secret')
-
-        self.oauth = OAuth1Session(
-            self.client_key,
-            client_secret=self.client_secret,
-            resource_owner_key=self.resource_owner_key,
-            resource_owner_secret=self.resource_owner_secret,
-            verifier=verifier)
-        response = self.oauth.fetch_access_token(self.access_token_url)
-
-        self.user_id = response.get('encoded_user_id')
-        self.resource_owner_key = response.get('oauth_token')
-        self.resource_owner_secret = response.get('oauth_token_secret')
-        return response
-
-# Client (Consumer) Key
-# 0ad642de85bc4e30a5c1e0aca8ec8355
-# Client (Consumer) Secret
-# 018285a1459844c082e9e0711328bd66
-# Temporary Credentials (Request Token) URL
-# https://api.fitbit.com/oauth/request_token
-# Token Credentials (Access Token) URL
-# https://api.fitbit.com/oauth/access_token
-# Authorize URL
-# https://www.fitbit.com/oauth/authorize
 
 if __name__ == '__main__':
-    client = FitbitOauthClient(client_key='0ad642de85bc4e30a5c1e0aca8ec8355', client_secret='018285a1459844c082e9e0711328bd66',
-                      callback_uri='http://baymax.ninja/callback')
-    token = client.fetch_request_token()
-    should_open_url = client.authorize_token_url()
-    # http://baymax.ninja/callback?oauth_token=88146d78f39d8b869c33d7488cf0ea0d&oauth_verifier=f978e667ba172c9a0c71a4c5bab98e29
-    new_token = client.fetch_access_token('f978e667ba172c9a0c71a4c5bab98e29')
-    # 得到uid resource_owner_key 和 secret
+    auth = FitbitAuth('0ad642de85bc4e30a5c1e0aca8ec8355', '018285a1459844c082e9e0711328bd66')
+    authorize_url = auth.get_authorize_url()
+    # http://baymax.ninja/callback?oauth_token=f2136e8a65fabe844adc16e8fc451bb0&oauth_verifier=95ee6317d3abc29ca8c01f7507d3cee4
+    oauth_verifier = raw_input('Please enter your oauth_verifier: ')
+    creds = auth.get_credentials('95ee6317d3abc29ca8c01f7507d3cee4')
+    # 开始请求
+    #    {'access_token': u'368dc98e41bea23c702b2fdea471ecc1',
+    # 'access_token_secret': u'a26d868de479cdb3a6e3943f68968299',
+    # 'consumer_key': '0ad642de85bc4e30a5c1e0aca8ec8355',
+    # 'consumer_secret': '018285a1459844c082e9e0711328bd66',
+    # 'user_id': u'3BNRKD'}
+    creds_dcit = {'access_token': u'368dc98e41bea23c702b2fdea471ecc1',
+                 'access_token_secret': u'a26d868de479cdb3a6e3943f68968299',
+                 'consumer_key': '0ad642de85bc4e30a5c1e0aca8ec8355',
+                 'consumer_secret': '018285a1459844c082e9e0711328bd66',
+                 'user_id': u'3BNRKD'}
+    # creds_dcit 非常重要
+    client = FitbitApi(**creds_dcit)
+    body_measures = client.get_user_profile()
+    ### 不对 取得的body是空的
+

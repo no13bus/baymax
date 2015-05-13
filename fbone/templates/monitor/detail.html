@@ -1,0 +1,19 @@
+
+{% set page_title = "Monitor list" %}
+
+{% extends "layouts/base.html" %}
+
+{% block body %}
+
+{% if form %}
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    {{ form.key.label }}
+    {{ form.key(size=20) }}
+    <input type="submit" value="Go">
+</form>
+{% else %}
+    <p>没有该检测项目</p>
+{% endif %}
+
+{% endblock %}

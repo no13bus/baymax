@@ -20,7 +20,8 @@ class BaseConfig(object):
 
     # http://flask.pocoo.org/docs/quickstart/#sessions
     SECRET_KEY = 'secret key'
-    # 在instance_path里面创建几个文件夹 这几个文件夹分别是 logs uploads openid 这三个文件夹
+
+    # LOG_FOLDER = os.path.join(INSTANCE_FOLDER_PATH, 'logs')
     LOG_FOLDER = os.path.join(INSTANCE_FOLDER_PATH, 'logs')
     make_dir(LOG_FOLDER)
 
@@ -35,12 +36,13 @@ class BaseConfig(object):
 class DefaultConfig(BaseConfig):
 
     DEBUG = True
-    # 主要配置都是在这里面 包括sql数据库的初始化等等。 echo的意思是将sql语句的执行情况显示出来
     # Flask-Sqlalchemy: http://packages.python.org/Flask-SQLAlchemy/config.html
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False
+    echo=True
     # SQLITE for prototyping.
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + INSTANCE_FOLDER_PATH + '/db.sqlite'
     # MYSQL for production.
+    #SQLALCHEMY_DATABASE_URI = 'mysql://username:password@server/db?charset=utf8'
     SQLALCHEMY_DATABASE_URI = 'mysql://root:CHENyu0512@127.0.0.1/baymax?charset=utf8'
 
     # Flask-babel: http://pythonhosted.org/Flask-Babel/
@@ -66,6 +68,18 @@ class DefaultConfig(BaseConfig):
     # Flask-openid: http://pythonhosted.org/Flask-OpenID/
     OPENID_FS_STORE_PATH = os.path.join(INSTANCE_FOLDER_PATH, 'openid')
     make_dir(OPENID_FS_STORE_PATH)
+
+    # flask-rq
+    # RQ_DEFAULT_HOST = 'localhost'
+    # RQ_DEFAULT_PORT = 6379
+    # RQ_DEFAULT_PASSWORD = None
+    # RQ_DEFAULT_DB = 1
+
+    # celery
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+
 
 
 class TestConfig(BaseConfig):

@@ -1,152 +1,218 @@
 # -*- coding: utf-8 -*-
+#
+"""
+Python library for the Withings API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Withings Body metrics Services API
+<http://www.withings.com/en/api/wbsapiv2>
+Uses Oauth 1.0 to authentify. You need to obtain a consumer key
+and consumer secret from Withings by creating an application
+here: <https://oauth.withings.com/partner/add>
+Usage:
+auth = WithingsAuth(CONSUMER_KEY, CONSUMER_SECRET)
+authorize_url = auth.get_authorize_url()
+print "Go to %s allow the app and copy your oauth_verifier" % authorize_url
+oauth_verifier = raw_input('Please enter your oauth_verifier: ')
+creds = auth.get_credentials(oauth_verifier)
+client = WithingsApi(creds)
+measures = client.get_measures(limit=1)
+print "Your last measured weight: %skg" % measures[0].weight
+"""
+
+__title__ = 'withings'
+__version__ = '0.1'
+__author__ = 'Maxime Bouroumeau-Fuseau'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2012 Maxime Bouroumeau-Fuseau'
+
+# __all__ = ['WithingsCredentials', 'WithingsAuth', 'WithingsApi',
+#            'WithingsMeasures', 'WithingsMeasureGroup']
+
 import requests
+from requests_oauthlib import OAuth1, OAuth1Session
 import json
 import datetime
-try:
-    from urllib.parse import urlencode
-except ImportError:
-    # Python 2.x
-    from urllib import urlencode
-from requests_oauthlib import OAuth1, OAuth1Session
-from .exceptions import (BadResponse, DeleteError, HTTPBadRequest,
-                               HTTPUnauthorized, HTTPForbidden,
-                               HTTPServerError, HTTPConflict, HTTPNotFound,
-                               HTTPTooManyRequests)
-
-# API Key	055ce4ef5b191b81750f46008d7f0dfd421f37d97bf4554eff4d1369c5
-# API Secret	0737e7fe7214d40f891f201250718445944c1447e677cb5b193799e3f
 
 
-class WithingsOauthClient(object):
-    API_ENDPOINT = "https://api.fitbit.com"
-    AUTHORIZE_ENDPOINT = "https://www.fitbit.com"
-    API_VERSION = 1
+class WithingsCredentials(object):
+    def __init__(self, access_token=None, access_token_secret=None,
+                 consumer_key=None, consumer_secret=None, user_id=None):
+        self.access_token = access_token
+        self.access_token_secret = access_token_secret
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.user_id = user_id
 
-    request_token_url = "https://oauth.withings.com/account/request_token"
-    access_token_url = "https://oauth.withings.com/account/access_token"
-    authorization_url = "https://oauth.withings.com/account/authorize"
 
-    def __init__(self, client_key, client_secret, resource_owner_key=None,
-                 resource_owner_secret=None, user_id=None, callback_uri=None,
-                 *args, **kwargs):
-        """
-        Create a FitbitOauthClient object. Specify the first 5 parameters if
-        you have them to access user data. Specify just the first 2 parameters
-        to access anonymous data and start the set up for user authorization.
-        Set callback_uri to a URL and when the user has granted us access at
-        the fitbit site, fitbit will redirect them to the URL you passed.  This
-        is how we get back the magic verifier string from fitbit if we're a web
-        app. If we don't pass it, then fitbit will just display the verifier
-        string for the user to copy and we'll have to ask them to paste it for
-        us and read it that way.
-        """
+class WithingsAuth(object):
+    URL = 'https://oauth.withings.com/account'
 
-        self.session = requests.Session()
-        self.client_key = client_key
-        self.client_secret = client_secret
-        self.resource_owner_key = resource_owner_key
-        self.resource_owner_secret = resource_owner_secret
-        if user_id:
-            self.user_id = user_id
-        params = {'client_secret': client_secret}
-        if callback_uri:
-            params['callback_uri'] = callback_uri
-        if self.resource_owner_key and self.resource_owner_secret:
-            params['resource_owner_key'] = self.resource_owner_key
-            params['resource_owner_secret'] = self.resource_owner_secret
-        self.oauth = OAuth1Session(client_key, **params)
+    def __init__(self, consumer_key, consumer_secret):
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.oauth_token = None
+        self.oauth_secret = None
 
-    def _request(self, method, url, **kwargs):
-        """
-        A simple wrapper around requests.
-        """
-        return self.session.request(method, url, **kwargs)
+    # 得到url
+    def get_authorize_url(self):
+        oauth = OAuth1Session(self.consumer_key,
+                              client_secret=self.consumer_secret)
 
-    def make_request(self, url, data={}, method=None, **kwargs):
-        """
-        Builds and makes the OAuth Request, catches errors
-        https://wiki.fitbit.com/display/API/API+Response+Format+And+Errors
-        """
-        if not method:
-            method = 'POST' if data else 'GET'
-        auth = OAuth1(
-            self.client_key, self.client_secret, self.resource_owner_key,
-            self.resource_owner_secret, signature_type='auth_header')
-        response = self._request(method, url, data=data, auth=auth, **kwargs)
+        tokens = oauth.fetch_request_token('%s/request_token' % self.URL)
+        print tokens
+        self.oauth_token = tokens['oauth_token']
+        self.oauth_secret = tokens['oauth_token_secret']
 
-        if response.status_code == 401:
-            raise HTTPUnauthorized(response)
-        elif response.status_code == 403:
-            raise HTTPForbidden(response)
-        elif response.status_code == 404:
-            raise HTTPNotFound(response)
-        elif response.status_code == 409:
-            raise HTTPConflict(response)
-        elif response.status_code == 429:
-            exc = HTTPTooManyRequests(response)
-            exc.retry_after_secs = int(response.headers['Retry-After'])
-            raise exc
+        return oauth.authorization_url('%s/authorize' % self.URL)
 
-        elif response.status_code >= 500:
-            raise HTTPServerError(response)
-        elif response.status_code >= 400:
-            raise HTTPBadRequest(response)
-        return response
+    def get_credentials(self, oauth_verifier):
+        oauth = OAuth1Session(self.consumer_key,
+                              client_secret=self.consumer_secret,
+                              resource_owner_key=self.oauth_token,
+                              resource_owner_secret=self.oauth_secret,
+                              verifier=oauth_verifier)
+        tokens = oauth.fetch_access_token('%s/access_token' % self.URL)
+        print tokens
+        # 这个返回的其实就是个dict
+        # return WithingsCredentials(access_token=tokens['oauth_token'],
+        #                            access_token_secret=tokens['oauth_token_secret'],
+        #                            consumer_key=self.consumer_key,
+        #                            consumer_secret=self.consumer_secret,
+        #                            user_id=tokens['userid'])
+        return dict(access_token=tokens['oauth_token'],
+                   access_token_secret=tokens['oauth_token_secret'],
+                   consumer_key=self.consumer_key,
+                   consumer_secret=self.consumer_secret,
+                   user_id=tokens['userid'])
 
-    def fetch_request_token(self):
-        """
-        Step 1 of getting authorized to access a user's data at fitbit: this
-        makes a signed request to fitbit to get a token to use in step 3.
-        Returns that token.}
-        """
 
-        token = self.oauth.fetch_request_token(self.request_token_url)
-        self.resource_owner_key = token.get('oauth_token')
-        self.resource_owner_secret = token.get('oauth_token_secret')
-        return token
+class WithingsApi(object):
+    URL = 'http://wbsapi.withings.net'
 
-    def authorize_token_url(self, **kwargs):
-        """Step 2: Return the URL the user needs to go to in order to grant us
-        authorization to look at their data.  Then redirect the user to that
-        URL, open their browser to it, or tell them to copy the URL into their
-        browser.  Allow the client to request the mobile display by passing
-        the display='touch' argument.
-        """
+    def __init__(self, **kwargs):
+        # self.credentials = kwargs
+        self.oauth = OAuth1(unicode(kwargs['consumer_key']),
+                            unicode(kwargs['consumer_secret']),
+                            unicode(kwargs['access_token']),
+                            unicode(kwargs['access_token_secret']),
+                            signature_type='query')
+        self.client = requests.Session()
+        self.client.auth = self.oauth
+        self.client.params.update({'userid': kwargs['user_id']})
 
-        return self.oauth.authorization_url(self.authorization_url, **kwargs)
+    def request(self, service, action, params=None, method='GET'):
+        if params is None:
+            params = {}
+        params['action'] = action
+        r = self.client.request(method, '%s/%s' % (self.URL, service), params=params)
+        response = json.loads(r.content)
+        print response
+        if response['status'] != 0:
+            raise Exception("Error code %s" % response['status'])
+        return response.get('body', None)
 
-    def fetch_access_token(self, verifier, token=None):
-        """Step 3: Given the verifier from fitbit, and optionally a token from
-        step 1 (not necessary if using the same FitbitOAuthClient object) calls
-        fitbit again and returns an access token object. Extract the needed
-        information from that and save it to use in future API calls.
-        """
-        if token:
-            self.resource_owner_key = token.get('oauth_token')
-            self.resource_owner_secret = token.get('oauth_token_secret')
+    # 好多参数是可选的 这个要注意 这个也是为什么选择**kwargs的原因
+    # get_body_measures(startdate=1222819200, enddate=1223190167)
+    def get_body_measures(self, kwargs):
+        res_body = self.request('measure', 'getmeas', kwargs)
+        return res_body
 
-        self.oauth = OAuth1Session(
-            self.client_key,
-            client_secret=self.client_secret,
-            resource_owner_key=self.resource_owner_key,
-            resource_owner_secret=self.resource_owner_secret,
-            verifier=verifier)
-        response = self.oauth.fetch_access_token(self.access_token_url)
+    # https://wbsapi.withings.net/v2/measure?action=getactivity&userid=29&startdateymd=2013-10-04&enddateymd=2013-10-08
+    # get_activity_measures(userid=29, startdateymd='2013-10-04', enddateymd='2013-10-08')
+    def get_activity_measures(self):
+        params = {'action':'getactivity', 'userid':6828098, 'date':'2015-04-21'}
+        r = self.client.request('GET', 'http://wbsapi.withings.net/v2/measure', params=params)
+        # r = self.request('v2/measure', 'getactivity', kwargs)
+        return r
 
-        self.user_id = response.get('encoded_user_id')
-        self.resource_owner_key = response.get('oauth_token')
-        self.resource_owner_secret = response.get('oauth_token_secret')
-        return response
+    # https://wbsapi.withings.net/v2/measure?action=getintradayactivity&userid=29&startdate=1368138600&enddate=1368142469
+    # get_intraday_activity(userid=29, startdate=1368138600, enddate=1368142469)
+    def get_intraday_activity(self, kwargs):
+        r = self.request('v2/measure', 'getintradayactivity', kwargs)
+        return r
+
+    # https://wbsapi.withings.net/v2/sleep?action=get&userid=29&startdate=1387234800&enddate=1387258800
+    # get_sleep(userid=29, startdate=1387234800, enddate=1387258800)
+    def get_sleep(self, kwargs):
+        r = self.request('v2/sleep', 'get', kwargs)
+        return r
+
+    # https://wbsapi.withings.net/v2/sleep?action=getsummary&startdateymd=2014-06-20&enddate=2014-10-25
+    # get_sleep_summary(startdateymd='2014-06-20', enddate='2014-10-25')
+    def get_sleep_summary(self, kwargs):
+        r = self.request('v2/sleep', 'getsummary', kwargs)
+        return r
+
+    def subscribe(self, callback_url, comment, appli=1):
+        params = {'callbackurl': callback_url,
+                  'comment': comment,
+                  'appli': appli}
+        self.request('notify', 'subscribe', params)
+
+    def unsubscribe(self, callback_url, appli=1):
+        params = {'callbackurl': callback_url, 'appli': appli}
+        self.request('notify', 'revoke', params)
+
+    def is_subscribed(self, callback_url, appli=1):
+        params = {'callbackurl': callback_url, 'appli': appli}
+        try:
+            self.request('notify', 'get', params)
+            return True
+        except:
+            return False
+
+    def list_subscriptions(self, appli=1):
+        r = self.request('notify', 'list', {'appli': appli})
+        return r['profiles']
+
+
+class WithingsMeasureGroup(object):
+    MEASURE_TYPES = (('weight', 1), ('height', 4), ('fat_free_mass', 5),
+                     ('fat_ratio', 6), ('fat_mass_weight', 8),
+                     ('diastolic_blood_pressure', 9), ('systolic_blood_pressure', 10),
+                     ('heart_pulse', 11))
+
+    def __init__(self, data):
+        self.data = data
+        self.grpid = data['grpid']
+        self.attrib = data['attrib']
+        self.category = data['category']
+        self.date = datetime.datetime.fromtimestamp(data['date'])
+        self.measures = data['measures']
+        for n, t in self.MEASURE_TYPES:
+            self.__setattr__(n, self.get_measure(t))
+
+    def is_ambiguous(self):
+        return self.attrib == 1 or self.attrib == 4
+
+    def is_measure(self):
+        return self.category == 1
+
+    def is_target(self):
+        return self.category == 2
+
+    def get_measure(self, measure_type):
+        for m in self.measures:
+            if m['type'] == measure_type:
+                return m['value'] * pow(10, m['unit'])
+        return None
 
 if __name__ == '__main__':
-    client = WithingsOauthClient(client_key='055ce4ef5b191b81750f46008d7f0dfd421f37d97bf4554eff4d1369c5', client_secret='0737e7fe7214d40f891f201250718445944c1447e677cb5b193799e3f',
-                      callback_uri='http://baymax.ninja/callback')
-    token = client.fetch_request_token()
-    should_open_url = client.authorize_token_url()
-    # http://baymax.ninja/callback?userid=6828098&oauth_token=8f9c49e207b3389d5c034bd68ede0fb5dcfcf61f218bf6e733135d19f4e359&oauth_verifier=I85jvp5yJHKhzliH
-    new_token = client.fetch_access_token('I85jvp5yJHKhzliH')
-    # 得到uid resource_owner_key 和 secret
-     #    {u'deviceid': u'0',
-     # u'oauth_token': u'824d43c51e4765dfbe214f2fd08ff47cb1f490ef48b02e432b9b01026e7b74c7',
-     # u'oauth_token_secret': u'01865c02d51e28f1957ec3193d251b1e6b0b3362996ef49c8b4e9d1071777',
-     # u'userid': u'6828098'}
+    auth = WithingsAuth('055ce4ef5b191b81750f46008d7f0dfd421f37d97bf4554eff4d1369c5', '0737e7fe7214d40f891f201250718445944c1447e677cb5b193799e3f')
+    authorize_url = auth.get_authorize_url()
+
+    oauth_verifier = raw_input('Please enter your oauth_verifier: ')
+    creds = auth.get_credentials('XS9syb8rp95Jg9prm4jB')
+    # 开始请求
+    creds_dcit = {'access_token': u'824d43c51e4765dfbe214f2fd08ff47cb1f490ef48b02e432b9b01026e7b74c7',
+                 'access_token_secret': u'01865c02d51e28f1957ec3193d251b1e6b0b3362996ef49c8b4e9d1071777',
+                 'consumer_key': '055ce4ef5b191b81750f46008d7f0dfd421f37d97bf4554eff4d1369c5',
+                 'consumer_secret': '0737e7fe7214d40f891f201250718445944c1447e677cb5b193799e3f',
+                 'user_id': u'6828098'}
+    # creds_dcit 非常重要
+    client = WithingsApi(**creds_dcit)
+    body_measures = client.get_body_measures({'startdate':1429275337, 'enddate':1429707337})
+    ### 不对 取得的body是空的
+    activity_measures = client.get_activity_measures()
+    intraday_activity = client.get_intraday_activity({'startdate': 1429275337, 'enddate':1429707337})
+    sleep = client.get_sleep({'startdate':1429275337, 'enddate':1429707337})

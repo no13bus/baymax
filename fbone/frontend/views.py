@@ -3,18 +3,25 @@
 from uuid import uuid4
 
 from flask import (Blueprint, render_template, current_app, request,
-                   flash, url_for, redirect, session, abort)
+                   flash, url_for, redirect, session, abort, jsonify)
 from flask.ext.mail import Message
 from flask.ext.babel import gettext as _
 from flask.ext.login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
 
 from ..user import User, UserDetail
-from ..extensions import db, mail, login_manager, oid
+from ..monitor import Monitor, Tokens
+from ..extensions import db, mail, login_manager, oid, app_celery
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm
-
+import requests
+import json
+import base64
 
 frontend = Blueprint('frontend', __name__)
 
+
+@app_celery.task
+def add_num(a,b):
+    return a+b
 
 @frontend.route('/login/openid', methods=['GET', 'POST'])
 @oid.loginhandler
@@ -108,6 +115,103 @@ def login():
 
     return render_template('frontend/login.html', form=form)
 
+@frontend.route('/<monitor_name>/callback', methods=['GET', 'POST'])
+def callback(monitor_name):
+    if monitor_name == 'github':
+        code = request.args.get('code', None)
+        print code
+        params = {
+                'client_id': 'e925ef871d26e063315b',
+                'redirect_uri': 'http://106.186.117.185:5555/github/callback',
+                'client_secret': 'aff83393a739a9d84c72b723c566c0e6366f887f',
+                'code': code
+            }
+        url = 'https://github.com/login/oauth/access_token'
+        req = requests.post(url=url, headers={'Accept': 'application/json'}, params=params)
+        if req.status_code != 200:
+            return redirect(url_for('frontend.login'))
+        resp_json = json.loads(req.content)
+        # get user token
+        token = resp_json['access_token']
+        req_url = 'https://api.github.com/user?access_token=%s' % token
+        r = requests.get(req_url)
+        user_json = json.loads(r.content)
+        username = user_json['login']
+        avatar_url = user_json['avatar_url']
+        email = user_json['email'] if user_json['email'] else ''
+
+        if not db.session.query(User).filter_by(name=username).all():
+            print 'no user'
+            user = User(name=username, email=email, avatar=avatar_url)
+            db.session.add(user)
+            db.session.commit()
+
+        user_one = db.session.query(User).filter_by(name=username).first()
+
+        mytooken = Tokens.query.filter_by(monitor_id=5, user_id=2, datatype='coding').first()
+        if not mytooken:
+            token = Tokens(monitor_id=5, user_id=2, datatype='coding', token=token)
+            db.session.add(token)
+            db.session.commit()
+        if login_user(user_one):
+            flash("Logged in", 'success')
+
+        # add_num.delay(2,3)
+
+        return redirect(url_for('user.index'))
+    elif monitor_name == 'fitbit':
+        code = request.args.get('code', None)
+        print code
+        params = {
+                'client_id': '229NZW',
+                'redirect_uri': 'http://106.186.117.185:5555/fitbit/callback',
+                'grant_type': 'authorization_code',
+                'code': code
+            }
+        base_str = 'Basic %s' % base64.b64encode('229NZW:018285a1459844c082e9e0711328bd66')
+        headers = {
+            'Authorization': base_str,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        url = 'https://api.fitbit.com/oauth2/token'
+        req = requests.post(url=url, headers=headers, params=params)
+        resp_json = json.loads(req.content)
+
+        token = resp_json['access_token']
+        mytooken = Tokens.query.filter_by(monitor_id=3, user_id=2, datatype='health').first()
+        if mytooken:
+            mytooken.token = token
+        else:
+            mytooken = Tokens(monitor_id=3, user_id=2, datatype='health', token=token)
+            db.session.add(mytooken)
+        db.session.commit()
+
+        refresh_token = resp_json['refresh_token']
+        profile_url = 'https://api.fitbit.com/1/user/-/profile.json'
+        actvity_url = 'https://api.fitbit.com/1/user/-/activities/date/2015-04-21.json'
+        food_url = 'https://api.fitbit.com/1/user/-/foods/log/date/2015-04-22.json'
+        body_url = 'https://api.fitbit.com/1/user/-/body/date/2015-04-22.json'
+        actvity_stat_url = 'https://api.fitbit.com/1/user/-/activities.json'
+        auth_str = 'Bearer %s' % token
+        # print auth_str
+        headers_json = {'Authorization':auth_str}
+        # r = requests.get(profile_url, headers=headers_json)
+        # r = requests.get(actvity_url, headers=headers_json)
+        # r = requests.get(food_url, headers=headers_json)
+        # r = requests.get(body_url, headers=headers_json)
+        r = requests.get(actvity_stat_url, headers=headers_json)
+
+        user_json = json.loads(r.content)
+
+        print user_json
+
+        add_num.delay(3,2)
+
+        return jsonify(user_json)
+    else:
+        return 'other'
+
+
 
 @frontend.route('/reauth', methods=['GET', 'POST'])
 @login_required
@@ -131,7 +235,7 @@ def reauth():
 @login_required
 def logout():
     logout_user()
-    flash(_('Logged out'), 'success')
+    flash('Logged out', 'success')
     return redirect(url_for('frontend.index'))
 
 

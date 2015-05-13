@@ -16,6 +16,11 @@ from .forms import ProfileForm, PasswordForm
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
+@settings.route('/post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def detail(post_id):
+    return str(post_id)
+
 
 @settings.route('/profile', methods=['GET', 'POST'])
 @login_required

@@ -4,20 +4,20 @@ import os
 
 from flask import Flask, request, render_template
 from flask.ext.babel import Babel
+
 from .config import DefaultConfig
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
+from .monitor import monitor
 from .api import api
 from .admin import admin
-from .extensions import db, mail, cache, login_manager, oid
+from .extensions import db, mail, cache, login_manager, oid, app_celery
 from .utils import INSTANCE_FOLDER_PATH
 
 
 # For import *
 __all__ = ['create_app']
-
-# 非常重要的蓝图初始化的地方，这里记得要写上你所以的蓝图
 
 DEFAULT_BLUEPRINTS = (
     frontend,
@@ -25,6 +25,7 @@ DEFAULT_BLUEPRINTS = (
     settings,
     api,
     admin,
+    monitor
 )
 
 
@@ -37,13 +38,9 @@ def create_app(config=None, app_name=None, blueprints=None):
         blueprints = DEFAULT_BLUEPRINTS
 
     app = Flask(app_name, instance_path=INSTANCE_FOLDER_PATH, instance_relative_config=True)
-    # 各种初始化。很棒！ 这里面的models数据库结构是怎么管理的呢？
     configure_app(app, config)
     configure_hook(app)
     configure_blueprints(app, blueprints)
-    # 将所有的扩展借助  init_app这个方法 会将app绑定到这个扩展上 比如db 比如cache 这样的话 就能将其分离了
-    # 这样在extensions.py 文件里面会发现db = Sqlalachemy() 就可以了 里面不用输入app这个参数
-    # 因为如果输入的话 这个时候app还没有实例化， 这样的话逻辑会有毛病的
     configure_extensions(app)
     configure_logging(app)
     configure_template_filters(app)
@@ -56,14 +53,13 @@ def configure_app(app, config=None):
     """Different ways of configurations."""
 
     # http://flask.pocoo.org/docs/api/#configuration
-    # 一些数据库的设置
     app.config.from_object(DefaultConfig)
 
     # http://flask.pocoo.org/docs/config/#instance-folders
-    app.config.from_pyfile('production.cfg', silent=True)
+    # app.config.from_pyfile('production.cfg', silent=True)
 
-    if config:
-        app.config.from_object(config)
+    # if config:
+    #     app.config.from_object(config)
 
     # Use instance folder instead of env variables to make deployment easier.
     #app.config.from_envvar('%s_APP_CONFIG' % DefaultConfig.PROJECT.upper(), silent=True)
@@ -77,15 +73,15 @@ def configure_extensions(app):
     mail.init_app(app)
 
     # flask-cache
-    cache.init_app(app)
+    # cache.init_app(app)
 
     # flask-babel
-    babel = Babel(app)
+    # babel = Babel(app)
 
-    @babel.localeselector
-    def get_locale():
-        accept_languages = app.config.get('ACCEPT_LANGUAGES')
-        return request.accept_languages.best_match(accept_languages)
+    # @babel.localeselector
+    # def get_locale():
+    #     accept_languages = app.config.get('ACCEPT_LANGUAGES')
+    #     return request.accept_languages.best_match(accept_languages)
 
     # flask-login
     login_manager.login_view = 'frontend.login'
@@ -94,10 +90,14 @@ def configure_extensions(app):
     @login_manager.user_loader
     def load_user(id):
         return User.query.get(id)
-    login_manager.setup_app(app)
+    login_manager.init_app(app)
 
     # flask-openid
     oid.init_app(app)
+
+    #flask-rq
+    # rqq.init_app(app)
+    app_celery.init_app(app)
 
 
 def configure_blueprints(app, blueprints):

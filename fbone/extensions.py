@@ -14,3 +14,6 @@ login_manager = LoginManager()
 
 from flask.ext.openid import OpenID
 oid = OpenID()
+
+from celery_app import FlaskCelery
+app_celery = FlaskCelery()

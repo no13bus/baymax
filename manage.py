@@ -1,45 +1,60 @@
 # -*- coding: utf-8 -*-
-
 from flask.ext.script import Manager
 
 from fbone import create_app
-from fbone.extensions import db
+from fbone.extensions import db, app_celery
 from fbone.user import User, UserDetail, ADMIN, ACTIVE
-from fbone.monitor import Monitor
 from fbone.utils import MALE
-
+from fbone.monitor import Monitor
 
 app = create_app()
+app.config.update(
+    CELERY_BROKER_URL='redis://localhost:6379',
+    CELERY_RESULT_BACKEND='redis://localhost:6379'
+)
 manager = Manager(app)
+app_celery.init_app(app)
 
+# from celery import Celery
+# def make_celery(app):
+#     celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
+#     celery.conf.update(app.config)
+#     TaskBase = celery.Task
+#     class ContextTask(TaskBase):
+#         abstract = True
+#         def __call__(self, *args, **kwargs):
+#             with app.app_context():
+#                 return TaskBase.__call__(self, *args, **kwargs)
+#     celery.Task = ContextTask
+#     return celery
+#
+# mycelery = make_celery(app)
+
+
+# celery worker -A manage.mycelery --loglevel=info
 
 @manager.command
 def run():
     """Run in local machine."""
 
-    app.run(host='0.0.0.0', port=5555)
+    app.run(port=5555, host='0.0.0.0')
 
 
 @manager.command
 def initdb():
     """Init/reset database."""
+
     db.drop_all()
     db.create_all()
 
     admin = User(
             name=u'admin',
             email=u'admin@example.com',
-            password=u'admin123',
+            password=u'123456',
             role_code=ADMIN,
-            status_code=ACTIVE,
+            # status_code=ACTIVE,
             )
-
-    # admin = User(
-    #         name=u'admin',
-    #         email=u'admin@example.com')
-    # monitor = Monitor(name='nike', url='nike.com', introduction='famous sport company')
     db.session.add(admin)
-    # db.session.add(monitor)
     db.session.commit()
 
 @manager.command
@@ -68,11 +83,12 @@ def insert():
     db.session.add(m7)
     db.session.add(m8)
     db.session.commit()
+    
 
-manager.add_option('-c', '--config',
-                   dest="config",
-                   required=False,
-                   help="config file")
+# manager.add_option('-c', '--config',
+#                    dest="config",
+#                    required=False,
+#                    help="config file")
 
 if __name__ == "__main__":
     manager.run()
