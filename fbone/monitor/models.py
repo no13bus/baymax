@@ -19,7 +19,7 @@ class Tokens(db.Model):
     id = Column(db.Integer, primary_key=True)
     monitor_id = Column(db.Integer, db.ForeignKey('monitor.id'))
     user_id = Column(db.Integer, db.ForeignKey('user.id'))
-    token = Column(db.String(80))
+    token = Column(db.String(300))
     datatype = Column(db.String(20))
     name = Column(db.String(20))
     created = Column(db.DateTime, default=get_current_time)

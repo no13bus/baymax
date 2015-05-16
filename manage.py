@@ -2,36 +2,16 @@
 from flask.ext.script import Manager
 
 from fbone import create_app
-from fbone.extensions import db, app_celery
+from fbone.extensions import db, celery
 from fbone.user import User, UserDetail, ADMIN, ACTIVE
 from fbone.utils import MALE
 from fbone.monitor import Monitor
 
 app = create_app()
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379'
-)
+
 manager = Manager(app)
-app_celery.init_app(app)
 
-# from celery import Celery
-# def make_celery(app):
-#     celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
-#     celery.conf.update(app.config)
-#     TaskBase = celery.Task
-#     class ContextTask(TaskBase):
-#         abstract = True
-#         def __call__(self, *args, **kwargs):
-#             with app.app_context():
-#                 return TaskBase.__call__(self, *args, **kwargs)
-#     celery.Task = ContextTask
-#     return celery
-#
-# mycelery = make_celery(app)
-
-
-# celery worker -A manage.mycelery --loglevel=info
+# celery worker -A manage.celery --loglevel=info
 
 @manager.command
 def run():

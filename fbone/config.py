@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+from datetime import timedelta
 from utils import make_dir, INSTANCE_FOLDER_PATH
 
 
@@ -76,8 +76,18 @@ class DefaultConfig(BaseConfig):
     # RQ_DEFAULT_DB = 1
 
     # celery
-    CELERY_BROKER_URL = 'redis://localhost:6379/0'
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_BROKER_URL = 'redis://localhost:6379/1'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
+    # CELERY_IMPORTS = (
+    #     'fbone.frontend.views.add_num'
+    # )
+    CELERYBEAT_SCHEDULE = {
+    'baymax_2s': {
+        'task': 'fbone.frontend.views.add_num',
+        'schedule': timedelta(seconds=2),
+        'args': [1,2]
+        }
+    }
 
 
 

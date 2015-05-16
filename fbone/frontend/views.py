@@ -10,7 +10,7 @@ from flask.ext.login import login_required, login_user, current_user, logout_use
 
 from ..user import User, UserDetail
 from ..monitor import Monitor, Tokens
-from ..extensions import db, mail, login_manager, oid, app_celery
+from ..extensions import db, mail, login_manager, oid, celery
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm
 import requests
 import json
@@ -19,9 +19,12 @@ import base64
 frontend = Blueprint('frontend', __name__)
 
 
-@app_celery.task
+@celery.task
 def add_num(a,b):
+    print a+b
     return a+b
+
+
 
 @frontend.route('/login/openid', methods=['GET', 'POST'])
 @oid.loginhandler
@@ -156,7 +159,7 @@ def callback(monitor_name):
         if login_user(user_one):
             flash("Logged in", 'success')
 
-        # add_num.delay(2,3)
+        add_num.delay(2,3)
 
         return redirect(url_for('user.index'))
     elif monitor_name == 'fitbit':
@@ -193,7 +196,10 @@ def callback(monitor_name):
         body_url = 'https://api.fitbit.com/1/user/-/body/date/2015-04-22.json'
         actvity_stat_url = 'https://api.fitbit.com/1/user/-/activities.json'
         auth_str = 'Bearer %s' % token
-        # print auth_str
+        print '********'
+        print auth_str
+        print len(auth_str)
+        print '********'
         headers_json = {'Authorization':auth_str}
         # r = requests.get(profile_url, headers=headers_json)
         # r = requests.get(actvity_url, headers=headers_json)
@@ -203,7 +209,7 @@ def callback(monitor_name):
 
         user_json = json.loads(r.content)
 
-        print user_json
+        # print user_json
 
         add_num.delay(3,2)
 

@@ -12,7 +12,7 @@ from .frontend import frontend
 from .monitor import monitor
 from .api import api
 from .admin import admin
-from .extensions import db, mail, cache, login_manager, oid, app_celery
+from .extensions import db, mail, cache, login_manager, oid, celery
 from .utils import INSTANCE_FOLDER_PATH
 
 
@@ -97,7 +97,7 @@ def configure_extensions(app):
 
     #flask-rq
     # rqq.init_app(app)
-    app_celery.init_app(app)
+    celery.init_app(app)
 
 
 def configure_blueprints(app, blueprints):
