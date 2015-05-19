@@ -1,39 +1,22 @@
 # -*- coding: utf-8 -*-
 from flask.ext.script import Manager
-
-from fbone import create_app
-from fbone.extensions import db, celery
-from fbone.user import User, UserDetail, ADMIN, ACTIVE
-from fbone.utils import MALE
-from fbone.monitor import Monitor
+from baymax import create_app
+from baymax.extensions import db
+from baymax.user import User, ADMIN
+from baymax.monitor import Monitor
 
 app = create_app()
-
 manager = Manager(app)
-
-# celery worker -A manage.celery --loglevel=info
-
 @manager.command
 def run():
-    """Run in local machine."""
-
     app.run(port=5555, host='0.0.0.0')
-
 
 @manager.command
 def initdb():
-    """Init/reset database."""
-
     db.drop_all()
     db.create_all()
 
-    admin = User(
-            name=u'admin',
-            email=u'admin@example.com',
-            password=u'123456',
-            role_code=ADMIN,
-            # status_code=ACTIVE,
-            )
+    admin = User(name=u'admin', email=u'admin@example.com')
     db.session.add(admin)
     db.session.commit()
 
@@ -50,10 +33,9 @@ def insert():
     m4 = Monitor(name='withings', url='http://oauth.withings.com/api', introduction='withings health')
     m5 = Monitor(name='github', url='https://developer.github.com/', introduction='source code social network')
     m6 = Monitor(name='weibo', url='http://open.weibo.com/', introduction='twitter copy to china')
-    # hardware ......
+    # hardware
     m7 = Monitor(name='bong', url='http://www.bong.cn/share/', introduction='bong bracelet')
     m8 = Monitor(name='xiaomi', url='https://github.com/stormluke/Mili-iOS', introduction='xiaomi bracelet')
-
     db.session.add(m1)
     db.session.add(m2)
     db.session.add(m3)
@@ -63,12 +45,6 @@ def insert():
     db.session.add(m7)
     db.session.add(m8)
     db.session.commit()
-    
-
-# manager.add_option('-c', '--config',
-#                    dest="config",
-#                    required=False,
-#                    help="config file")
 
 if __name__ == "__main__":
     manager.run()

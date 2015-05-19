@@ -1,0 +1,24 @@
+
+{% set page_title = "监测项目列表" %}
+
+{% extends "layouts/base.html" %}
+{% block body %}
+<div class="container">
+<div class="row">
+    <div>
+
+    <h1 style="text-align:center;margin:60px 50px 30px;">监测项目列表</h1>
+    <ul style="list-style: none;">
+    {% for item in monitors %}
+    <li style="float: left;width: 200px;height: 180px;padding: 10px;text-align: center;margin-bottom: 20px;">
+    <a style="display: block;" href="{{ url_for('monitor.detail', monitor_name= item.name) }}"><img {% if not res[item.name] %}class="grayscale" {% endif %} style="width: 100px; height:100px; border-radius: 10px;" src="{{ url_for('static', filename='img/'+item.name+'.png') }}" alt="{{ item.name }}"></a>
+    <a style="font-size:130%" href="{{ url_for('monitor.detail', monitor_name= item.name) }}">{{ item.name }}</a>
+    </li>
+    {% endfor %}
+    </ul>
+
+    </div>
+
+</div>
+</div>
+{% endblock %}

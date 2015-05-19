@@ -1,0 +1,65 @@
+{% extends 'layouts/base.html' %}
+{% set page_title = 'Home' %}
+
+{% block body %}
+
+    <div class="container header">
+        <div class="row">
+            <div class="col-md-12" style="text-align: center">
+                <h1 style="color: #fff;font-size: 40px;line-height: 55px;letter-spacing: 2px;font-weight: 600;">Hello, I am your personal health companion!</h1>
+                <h3 style="color: #fff;margin-bottom: 40px;margin-top: 20px;">baymax.ninja 做存储你的生活数据的大白</h3>
+                <a class="btn btn-demo btn-github" target="_blank" href="https://github.com/no13bus/baymax"><i class="fa fa-github"></i> View on GitHub</a>
+                <a class="btn btn-demo btn-clear" target="_blank" href="{{ url_for('frontend.user_show', username='no13bus') }}">See the demo</a>
+            </div>
+        </div>
+
+    </div>
+    <div class="container" style="margin-bottom: 200px;">
+        <div class="row" style="margin-top: 50px;">
+            <h1 style="text-align:center;color: #000">数据来源</h1>
+            <hr style="border: solid 1px #5a5a5a; width: 80px;">
+            <ul style="list-style: none;">
+            {% for item in monitors %}
+            <li style="float: left;width: 200px;height: 180px;padding: 10px;text-align: center;margin-bottom: 20px;">
+            <img style="width: 100px; height:100px; border-radius: 10px;" src="{{ url_for('static', filename='img/'+item+'.png') }}" alt="{{ item }}">
+            </li>
+            {% endfor %}
+            </ul>
+        </div>
+
+
+        <div class="row" style="margin-top: 50px;margin-bottom: 30px;">
+              <div class="col-lg-12" style="text-align: center">
+                <h2 style="color: #000">开箱说明</h2>
+                <hr style="border: solid 1px #5a5a5a; width: 80px;">
+              </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-4" style="text-align: center">
+            <i class="fa fa-sign-in" style="font-size: 130px;"></i>
+            <h2>1. GitHub账户登录</h2>
+            <hr style="border: solid 1px #5a5a5a; width: 80px;">
+            </div>
+            <div class="col-xs-12 col-sm-4" style="text-align: center">
+            <i class="fa fa-adn" style="font-size: 130px;"></i>
+            <h2>2. APP权限认证</h2>
+            <hr style="border: solid 1px #5a5a5a; width: 80px;">
+            </div>
+            <div class="col-xs-12 col-sm-4" style="text-align: center">
+            <i class="fa fa-line-chart" style="font-size: 130px;"></i>
+            <h2>3. 展示数据</h2>
+            <hr style="border: solid 1px #5a5a5a; width: 80px;">
+            </div>
+        </div>
+        <div class="row" style="margin-top: 80px;">
+            <div class="col-xs-12 text-center">
+                 <a href="https://github.com/login/oauth/authorize?redirect_uri=http://baymax.ninja/github/callback&client_id=e925ef871d26e063315b" class="btn btn-go">LET'S GO!<span class="fa fa-chevron-right"></span></a>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+{% endblock %}

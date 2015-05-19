@@ -9,11 +9,11 @@
 
 from flask.ext.testing import TestCase as Base, Twill
 
-from fbone import create_app
-from fbone.user import User, UserDetail, ADMIN, USER, ACTIVE
-from fbone.config import TestConfig
-from fbone.extensions import db
-from fbone.utils import MALE
+from baymax import create_app
+from baymax.user import User, UserDetail, ADMIN, USER, ACTIVE
+from baymax.config import TestConfig
+from baymax.extensions import db
+from baymax.utils import MALE
 
 
 class TestCase(Base):

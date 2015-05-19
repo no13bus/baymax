@@ -1,0 +1,28 @@
+
+{% set page_title = "检测项目配置" %}
+
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<div class="container">
+
+{% if form %}
+<div class="row" style="margin: 200px 300px 30px;text-align:center;">
+    <form action="" method="POST" role="form">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+        <label class="control-label">输入rescuetime的key(<a href="http://t.cn/R2w8F7f" target="_blank">申请网址</a>)</label>
+        <div class="input-group">
+            <input type="text" class="form-control" name="key">
+            <span class="input-group-btn">
+            <button class="btn btn-primary" type="submit">添加</button>
+            </span>
+        </div>
+        </div>
+    </form>
+</div>
+{% else %}
+    <p>对不起，目前还未支持该检测项目或者您未有此项目的数据</p>
+{% endif %}
+</div>
+{% endblock %}
