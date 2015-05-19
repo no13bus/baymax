@@ -32,12 +32,3 @@ class MonitorValue(db.Model):
     recode_date = Column(db.DateTime, default=get_current_time)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created = Column(db.DateTime, default=get_current_time)
-#
-#
-# token = db.Table('tokens',
-#     db.Column('id', db.Integer, primary_key=True),
-#     db.Column('monitor_id', db.Integer, db.ForeignKey('monitor.id')),
-#     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-#     db.Column('token', db.String(80)),
-#     db.Column('datatype', db.String(20))
-# )

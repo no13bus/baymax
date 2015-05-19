@@ -19,7 +19,7 @@ class BaseConfig(object):
     ADMINS = ['youremail@yourdomain.com']
 
     # http://flask.pocoo.org/docs/quickstart/#sessions
-    SECRET_KEY = 'secret key'
+    SECRET_KEY = 'huihfiushdfy8shfurh7s8gibejhr387y98y8**&%'
 
     # LOG_FOLDER = os.path.join(INSTANCE_FOLDER_PATH, 'logs')
     LOG_FOLDER = os.path.join(INSTANCE_FOLDER_PATH, 'logs')
@@ -43,7 +43,7 @@ class DefaultConfig(BaseConfig):
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + INSTANCE_FOLDER_PATH + '/db.sqlite'
     # MYSQL for production.
     #SQLALCHEMY_DATABASE_URI = 'mysql://username:password@server/db?charset=utf8'
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:CHENyu0512@127.0.0.1/baymax?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:root@127.0.0.1/baymax?charset=utf8'
 
     # Flask-babel: http://pythonhosted.org/Flask-Babel/
     ACCEPT_LANGUAGES = ['zh']
@@ -95,11 +95,11 @@ class DefaultConfig(BaseConfig):
 
     CALLBACK_URL = 'http://baymax.ninja/%s/callback'
     # github api
-    GITHUB_KEY = 'e925ef871d26e063315b'
-    GITHUB_SECRET = 'aff83393a739a9d84c72b723c566c0e6366f887f'
+    GITHUB_KEY = ''
+    GITHUB_SECRET = ''
     # fitbit
-    FITBIT_KEY = '229NZW'
-    FITBIT_SECRET = '018285a1459844c082e9e0711328bd66'
+    FITBIT_KEY = ''
+    FITBIT_SECRET = ''
 
 
 

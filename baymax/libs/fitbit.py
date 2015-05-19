@@ -5,8 +5,8 @@ import urllib
 import datetime
 
 API_URL = 'https://api.fitbit.com'
-CLIENT_ID = '229NZW'
-CLIENT_SECRET = '018285a1459844c082e9e0711328bd66'
+CLIENT_ID = ''
+CLIENT_SECRET = ''
 REDIRECT_URI = 'http://baymax.ninja/fitbit/callback'
 OAUTH_URL = 'https://www.fitbit.com'
 

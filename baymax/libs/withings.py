@@ -198,17 +198,17 @@ class WithingsMeasureGroup(object):
         return None
 
 if __name__ == '__main__':
-    auth = WithingsAuth('055ce4ef5b191b81750f46008d7f0dfd421f37d97bf4554eff4d1369c5', '0737e7fe7214d40f891f201250718445944c1447e677cb5b193799e3f')
+    auth = WithingsAuth('', '')
     authorize_url = auth.get_authorize_url()
 
     oauth_verifier = raw_input('Please enter your oauth_verifier: ')
     creds = auth.get_credentials('XS9syb8rp95Jg9prm4jB')
     # 开始请求
-    creds_dcit = {'access_token': u'824d43c51e4765dfbe214f2fd08ff47cb1f490ef48b02e432b9b01026e7b74c7',
-                 'access_token_secret': u'01865c02d51e28f1957ec3193d251b1e6b0b3362996ef49c8b4e9d1071777',
-                 'consumer_key': '055ce4ef5b191b81750f46008d7f0dfd421f37d97bf4554eff4d1369c5',
-                 'consumer_secret': '0737e7fe7214d40f891f201250718445944c1447e677cb5b193799e3f',
-                 'user_id': u'6828098'}
+    creds_dcit = {'access_token': u'',
+                 'access_token_secret': u'',
+                 'consumer_key': '',
+                 'consumer_secret': '',
+                 'user_id': u''}
     # creds_dcit 非常重要
     client = WithingsApi(**creds_dcit)
     body_measures = client.get_body_measures({'startdate':1429275337, 'enddate':1429707337})

@@ -130,22 +130,22 @@ class FitbitApi(object):
 
 
 if __name__ == '__main__':
-    auth = FitbitAuth('0ad642de85bc4e30a5c1e0aca8ec8355', '018285a1459844c082e9e0711328bd66')
+    auth = FitbitAuth('', '')
     authorize_url = auth.get_authorize_url()
     # http://baymax.ninja/callback?oauth_token=f2136e8a65fabe844adc16e8fc451bb0&oauth_verifier=95ee6317d3abc29ca8c01f7507d3cee4
     oauth_verifier = raw_input('Please enter your oauth_verifier: ')
-    creds = auth.get_credentials('95ee6317d3abc29ca8c01f7507d3cee4')
+    creds = auth.get_credentials('')
     # 开始请求
     #    {'access_token': u'368dc98e41bea23c702b2fdea471ecc1',
     # 'access_token_secret': u'a26d868de479cdb3a6e3943f68968299',
     # 'consumer_key': '0ad642de85bc4e30a5c1e0aca8ec8355',
     # 'consumer_secret': '018285a1459844c082e9e0711328bd66',
     # 'user_id': u'3BNRKD'}
-    creds_dcit = {'access_token': u'368dc98e41bea23c702b2fdea471ecc1',
-                 'access_token_secret': u'a26d868de479cdb3a6e3943f68968299',
-                 'consumer_key': '0ad642de85bc4e30a5c1e0aca8ec8355',
-                 'consumer_secret': '018285a1459844c082e9e0711328bd66',
-                 'user_id': u'3BNRKD'}
+    creds_dcit = {'access_token': u'',
+                 'access_token_secret': u'',
+                 'consumer_key': '',
+                 'consumer_secret': '',
+                 'user_id': u''}
     # creds_dcit 非常重要
     client = FitbitApi(**creds_dcit)
     body_measures = client.get_user_profile()
