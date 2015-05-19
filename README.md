@@ -3,6 +3,8 @@ baymax
 
 搭建自己的个人生活数据库-大白，数据包括上网，打车，运动，身体健康指标统计等等。
 
+[![repo](http://ohmyrepo.ml/static/ohmyrepo.png)](http://ohmyrepo.ml/show?u=no13bus&r=baymax)
+
 # 开始
 - pip install -r requirements.txt
 - 修改baymax中的config中的相关配置，比如celery的配置，mysql数据库的配置，APP回调地址的配置
@@ -55,3 +57,12 @@ baymax
 这个项目的起因。
 - 开源的目的一方面是因为大家对数据私密的敏感性，如果觉得不ok，可以自己拿去搭建自己的生活数据库。另一方面主要是因为硬件设备的限制，
 因为个人没有那么多的硬件产品(目前只有个手机)，大家fork之后的话可以借助手中的硬件去hack，调试，开发libs库，进而扩充整个生活API。
+
+# 截图
+![1](https://raw.githubusercontent.com/no13bus/baymax/master/screen/1.png)
+![2](https://raw.githubusercontent.com/no13bus/baymax/master/screen/2.png)
+![3](https://raw.githubusercontent.com/no13bus/baymax/master/screen/3.png)
+![4](https://raw.githubusercontent.com/no13bus/baymax/master/screen/4.png)
+![5](https://raw.githubusercontent.com/no13bus/baymax/master/screen/5.png)
+![6](https://raw.githubusercontent.com/no13bus/baymax/master/screen/6.png)
+![7](https://raw.githubusercontent.com/no13bus/baymax/master/screen/7.png)
