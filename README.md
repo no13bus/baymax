@@ -17,6 +17,7 @@ baymax
 
 # 部署
 - 使用nginx+gunicorn+supervisor进行部署
+- `gunicorn -b 0.0.0.0:6666 -w 2 manage:app`
 
 # 目前支持的数据提供方
 - [GitHub](http://github.com)
