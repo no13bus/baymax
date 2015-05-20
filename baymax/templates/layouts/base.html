@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>{% block title %}{{ page_title|default('Project') }}{% endblock %} - Project</title>
+    <meta name="description" content="baymax">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="Shortcut Icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
+    {% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>
+    <style type="text/css">
+        .grayscale { filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+            -webkit-filter: grayscale(100%);
+            filter: grayscale(100%);
+            filter: gray;
+            filter:progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+        }
+        .header {
+        background: linear-gradient(rgba(94,94,94,.5),rgba(94,94,94,.5)),url(/static/img/header.jpg) no-repeat center top;
+        padding-top: 250px;
+        background-attachment: relative;
+        background-position: center center;
+        background-size: 100%;
+        background-size: cover;
+        min-height: 700px;
+        width: 100%;
+        }
+        .btn-demo {
+            border-radius: 50px;
+            margin-right: 15px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 14px 28px 13px 28px;
+            background: 0 0;
+            color: #fff;
+            border: 2px solid #fff;
+        }
+        .btn-go {
+            border-radius: 50px;
+            margin-right: 15px;
+            font-size: 20px;
+            letter-spacing: 1px;
+            padding: 14px 28px 13px 28px;
+            color: #fff;
+            border: 2px solid #555555;
+            background: #6DB81C;
+        }
+        .btn-github{
+            background: #6DB81C;
+            color: #fff;
+        }
+
+    </style>
+    {% endblock %}
+
+</head>
+<body style="padding-top: 20px; padding-bottom: 20px">
+
+    {% block topbar %}
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="/" class="navbar-brand">Baymax.ninja</a>
+            </div>
+            <div class="navbar-collapse collapse" id="navbar-main">
+                <ul class="nav navbar-nav">
+                    <li>
+                      <a href="https://github.com/no13bus/baymax" target="_blank"><i class="fa fa-github"></i> Source code</a>
+                    </li>
+                    <li {% if active and active == 'show' %}class="active"{% endif %}>
+                      <a href="{{ url_for('frontend.show') }}"><i class="fa fa-bar-chart"></i> Show</a>
+                    </li>
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    {% if not current_user.is_authenticated() %}
+                      <li><a href="https://github.com/login/oauth/authorize?redirect_uri=http://baymax.ninja/github/callback&client_id=e925ef871d26e063315b" title="Sign in"><i class="fa fa-sign-in fa-lg"></i> Sign in</a></li>
+                    {% else %}
+                      <li>
+                        <a href="{{ url_for('monitor.list') }}"><img src="{{ avatar }}" style="width: 20px; height:20px;" title="{{ current_user.name }}"/></a>
+                      </li>
+                      <li {% if active and active == 'monitor' %}class="active"{% endif %}>
+                        <a href="{{ url_for('monitor.list') }}" title="Add a repo"><i class="fa fa-cog fa-lg"></i> Monitor</a>
+                      </li>
+                      <li>
+                          <a href="{{ url_for('frontend.logout') }}" title="Sign out"><i class="fa fa-sign-out fa-lg"></i> Sign out</a>
+                      </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block flash_message %}
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+            <div class="container" style="padding-top: 50px;">
+                <div class="container-fluid">
+                    <div id='flash_message_container'>
+                        {% for category, msg in messages %}
+                            <div class="alert alert-{{ category }}">
+                                <button type="button" class="close" data-dismiss="alert">×</button>
+                                {{ msg }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endwith %}
+
+    {% endblock %}
+
+
+
+      {% block body %}
+        <div class="container">
+        </div>
+      {% endblock %}
+
+
+    {% block js_btm %}
+    <script type="text/javascript" src="http://cdn.bootcss.com/jquery/2.1.4/jquery.js"></script>
+    <script type="text/javascript" src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.js"></script>
+    <script type="application/javascript" src="http://cdn.bootcss.com/highcharts/4.1.5/highcharts.js"></script>
+    {% endblock %}
+
+    {% block footer %}
+    <div class="navbar-fixed-bottom" style="background: #2C3E50;font-size: 14px;text-align: center;color: #B4AFB4;padding-top: 22px;padding-bottom: 22px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <span>@<a href="https://github.com/no13bus" target="_blank">no13bus</a></span>
+                    <span>Powered by <a href="https://github.com/mitsuhiko/flask" target="_blank">Flask</a></span> |
+                    <span><a href="https://github.com/twbs/bootstrap" target="_blank">Bootstrap</a></span> |
+                    <span><a href="http://www.linode.com/" target="_blank">Linode</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>
