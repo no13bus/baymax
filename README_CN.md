@@ -1,3 +1,4 @@
+
 baymax
 ========
 
@@ -9,12 +10,16 @@ baymax
 - pip install -r requirements.txt
 - 修改baymax中的config中的相关配置，比如celery的配置，mysql数据库的配置，APP回调地址的配置
 - 在相关APP的api申请网址中注册自己的应用和回调地址等，并将其key secret更新到config.py文件中
-- python manage.py initdb
-- python manage.py insert
-- python manage.py run
+- `python manage.py initdb`
+- `python manage.py insert`
+- `python manage.py run`
+- 开启celery队列: `celery worker -A manage.celery -l info -P gevent -c 10`
+- 开启定时任务: `celery -A manage.celery beat`
 
 # 部署
 - 使用nginx+gunicorn+supervisor进行部署
+- `gunicorn -b 0.0.0.0:6666 -w 2 manage:app`
+- 后端事件日志监控使用 [sentry](https://getsentry.com/welcome/)
 
 # 目前支持的数据提供方
 - [GitHub](http://github.com)
@@ -43,6 +48,12 @@ baymax
 - celery
 - redis
 
+# Demo
+http://baymax.ninja/no13bus/show
+
+# 主页
+http://baymax.ninja
+
 # Fork
 欢迎大家fok，因为有些智能硬件本人没有，一些智能硬件的api接口申请不到。如果你碰巧这2者都有的话，欢迎为项目增砖添瓦，
 将接口放至于libs文件夹内。
@@ -66,3 +77,4 @@ baymax
 ![5](https://raw.githubusercontent.com/no13bus/baymax/master/screen/5.png)
 ![6](https://raw.githubusercontent.com/no13bus/baymax/master/screen/6.png)
 ![7](https://raw.githubusercontent.com/no13bus/baymax/master/screen/7.png)
+
