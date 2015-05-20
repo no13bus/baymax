@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask.ext.script import Manager
 from baymax import create_app
-from baymax.extensions import db
+from baymax.extensions import db, celery
 from baymax.user import User, ADMIN
 from baymax.monitor import Monitor
 
