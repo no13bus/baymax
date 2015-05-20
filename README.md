@@ -9,9 +9,11 @@ baymax
 - pip install -r requirements.txt
 - 修改baymax中的config中的相关配置，比如celery的配置，mysql数据库的配置，APP回调地址的配置
 - 在相关APP的api申请网址中注册自己的应用和回调地址等，并将其key secret更新到config.py文件中
-- python manage.py initdb
-- python manage.py insert
-- python manage.py run
+- `python manage.py initdb`
+- `python manage.py insert`
+- `python manage.py run`
+- 开启celery队列: `celery worker -A manage.celery -l info -P gevent -c 10`
+- 开启定时任务: `celery -A manage.celery beat`
 
 # 部署
 - 使用nginx+gunicorn+supervisor进行部署
