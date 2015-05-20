@@ -5,7 +5,7 @@ Build your personal life database, including of internet, taxi, sports and healt
 
 [![repo](http://ohmyrepo.ml/static/ohmyrepo.png)](http://ohmyrepo.ml/show?u=no13bus&r=baymax)
 
-[中文文档]()
+[中文文档](https://github.com/no13bus/baymax/blob/master/README_CN.md)
 
 # Let's start
 - pip install -r requirements.txt
@@ -19,8 +19,8 @@ Build your personal life database, including of internet, taxi, sports and healt
 
 # Which app we support now
 - [GitHub](http://github.com)
-- [健康应用: Fitbit](https://dev.fitbit.com)
-- [上网时间数据分析神器: rescuetime](https://www.rescuetime.com/developers)
+- [Health App: Fitbit](https://dev.fitbit.com)
+- [rescuetime](https://www.rescuetime.com/developers)
 
 # Which app we will support
 - [ledongli](http://ledongli.cn)
