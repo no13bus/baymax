@@ -46,6 +46,12 @@ baymax
 - celery
 - redis
 
+# Demo
+http://baymax.ninja/no13bus/show
+
+# 主页
+http://baymax.ninja
+
 # Fork
 欢迎大家fok，因为有些智能硬件本人没有，一些智能硬件的api接口申请不到。如果你碰巧这2者都有的话，欢迎为项目增砖添瓦，
 将接口放至于libs文件夹内。
