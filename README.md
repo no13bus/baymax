@@ -15,7 +15,7 @@ Build your personal life database, including of internet, taxi, sports and healt
 - python manage.py run
 
 # Deployment
-- 使用nginx+gunicorn+supervisor
+- nginx+gunicorn+supervisor
 
 # Which app we support now
 - [GitHub](http://github.com)
@@ -47,7 +47,7 @@ GitHub code submitted times and statistics.
 - redis
 
 
-# 截图
+# Screen
 ![1](https://raw.githubusercontent.com/no13bus/baymax/master/screen/1.png)
 ![2](https://raw.githubusercontent.com/no13bus/baymax/master/screen/2.png)
 ![3](https://raw.githubusercontent.com/no13bus/baymax/master/screen/3.png)
