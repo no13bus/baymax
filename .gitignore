@@ -24,5 +24,4 @@ openid
 
 env
 
-.idea
-.idea/*.*
+.idea/
