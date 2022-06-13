@@ -76,7 +76,7 @@
                 </ul>
 
                 <ul class="nav navbar-nav navbar-right">
-                    {% if not current_user.is_authenticated() %}
+                    {% if not current_user.is_authenticated %}
                       <li><a href="https://github.com/login/oauth/authorize?redirect_uri=http://baymax.ninja/github/callback&client_id=e925ef871d26e063315b" title="Sign in"><i class="fa fa-sign-in fa-lg"></i> Sign in</a></li>
                     {% else %}
                       <li>

@@ -4,8 +4,6 @@ baymax
 
 搭建自己的个人生活数据库-大白，数据包括上网，打车，运动，身体健康指标统计等等。
 
-[![repo](http://ohmyrepo.ml/static/ohmyrepo.png)](http://ohmyrepo.ml/show?u=no13bus&r=baymax)
-
 # 开始
 - pip install -r requirements.txt
 - 修改baymax中的config中的相关配置，比如celery的配置，mysql数据库的配置，APP回调地址的配置
@@ -48,11 +46,10 @@ baymax
 - celery
 - redis
 
-# Demo
-http://baymax.ninja/no13bus/show
+# change log
+### version 0.1
+- update the framework version. Flask2.x Python3.x
 
-# 主页
-http://baymax.ninja
 
 # Fork
 欢迎大家fok，因为有些智能硬件本人没有，一些智能硬件的api接口申请不到。如果你碰巧这2者都有的话，欢迎为项目增砖添瓦，

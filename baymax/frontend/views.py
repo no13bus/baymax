@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import (Blueprint, render_template, current_app, request,
                    flash, url_for, redirect, session, abort, jsonify)
-from flask.ext.login import login_required, login_user, current_user, logout_user
+from flask_login import login_required, login_user, current_user, logout_user
 from ..user import User
 from ..monitor import Tokens
 from ..extensions import db
@@ -28,14 +28,14 @@ def show():
 
 @frontend.route('/')
 def index():
-    if current_user.is_authenticated():
+    if current_user.is_authenticated:
         return redirect(url_for('frontend.show'))
     monitors = ['rescuetime', 'fitbit', 'github', 'nike', 'argus', 'bong', 'ledongli', 'moves', 'uber', 'withings']
     return render_template('index.html', monitors=monitors)
 
 @frontend.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated():
+    if current_user.is_authenticated:
         return redirect(url_for('frontend.show'))
     next=request.args.get('next', None)
     redirect_uri = current_app.config.get('CALLBACK_URL') % 'github'
@@ -69,7 +69,7 @@ def callback(monitor_name):
         avatar_url = user_json['avatar_url']
         email = user_json['email'] if user_json['email'] else ''
         if not User.query.filter_by(name=username).first():
-            print 'no user:%s' % username
+            print('no user:%s' % username)
             user = User(name=username, email=email, avatar=avatar_url)
             db.session.add(user)
             db.session.commit()
@@ -81,14 +81,14 @@ def callback(monitor_name):
             db.session.commit()
             # 初始化爬取 github commit数据
             github_task_func.delay(token, username)
-            print 'github task start....'
+            print('github task start....')
         login_user(user_one)
         session['avatar'] = user_one.avatar
         # if login_user(user_one):
         #     flash("Logged in", 'success')
         return redirect(next or url_for('frontend.show'))
     elif monitor_name == 'fitbit':
-        if not current_user.is_authenticated():
+        if not current_user.is_authenticated:
             return redirect(url_for('frontend.login'))
         code = request.args.get('code', None)
         params = {
@@ -105,10 +105,10 @@ def callback(monitor_name):
         url = 'https://api.fitbit.com/oauth2/token'
         req = requests.post(url=url, headers=headers, params=params)
         resp_json = json.loads(req.content)
-        print resp_json
+        print(resp_json)
         token = resp_json['access_token']
         refresh_token = resp_json['refresh_token']
-        print refresh_token
+        print(refresh_token)
         user_token = Tokens.query.filter_by(monitor_id=3, user_id=current_user.id, datatype='health').first()
         if user_token:
             user_token.token = token
@@ -121,7 +121,7 @@ def callback(monitor_name):
             db.session.commit()
             # 初始化爬取 fitbit 健康数据
             fitbit_task_func(token, current_user.name)
-            print u'开始爬取fitbit数据'
+            print(u'开始爬取fitbit数据')
             flash(u'fitbit权限认证成功', 'success')
         return redirect(url_for('monitor.list'))
     else:

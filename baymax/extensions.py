@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
+from werkzeug.utils import import_string
+import werkzeug
+werkzeug.import_string = import_string
 
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
-from flask.ext.mail import Mail
+from flask_mail import Mail
 mail = Mail()
 
-from flask.ext.cache import Cache
+from flask_cache import Cache
 cache = Cache()
 
-from flask.ext.login import LoginManager
+from flask_login import LoginManager
 login_manager = LoginManager()
 
-from flask.ext.openid import OpenID
+from flask_openid import OpenID
 oid = OpenID()
 
 import flask

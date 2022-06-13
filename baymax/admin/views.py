@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template, request, flash
-from flask.ext.login import login_required
+from flask_login import login_required
 
 from ..extensions import db
 from ..decorators import admin_required

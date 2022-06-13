@@ -3,8 +3,6 @@ baymax
 
 Build your personal life database, including of internet, taxi, sports and health data analysis.
 
-[![repo](http://ohmyrepo.ml/static/ohmyrepo.png)](http://ohmyrepo.ml/show?u=no13bus&r=baymax)
-
 [中文文档](https://github.com/no13bus/baymax/blob/master/README_CN.md)
 
 # Let's start
@@ -45,6 +43,10 @@ GitHub code submitted times and statistics.
 - Bootstrap
 - celery
 - redis
+
+# change log
+### version 0.1
+- update the framework version. Flask2.x Python3.x
 
 
 # Screen

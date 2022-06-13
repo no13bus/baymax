@@ -2,14 +2,13 @@
 
 from sqlalchemy import Column, types
 from sqlalchemy.ext.mutable import Mutable
-from werkzeug import generate_password_hash, check_password_hash
-from flask.ext.login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from ..extensions import db
 from ..utils import get_current_time, SEX_TYPE, STRING_LEN
 
 
-class User(db.Model, UserMixin):
+class User(db.Model):
     id = Column(db.Integer, primary_key=True)
     name = Column(db.String(STRING_LEN), nullable=False, unique=True)
     email = Column(db.String(STRING_LEN), nullable=True, unique=True)

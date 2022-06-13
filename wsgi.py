@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-from flask.ext.script import Manager
+# from flask.ext.script import Manager
 from baymax import create_app
 from baymax.extensions import db, celery
 from baymax.user import User, ADMIN
 from baymax.monitor import Monitor
 
 app = create_app()
-manager = Manager(app)
-@manager.command
+# manager = Manager(app)
+@app.cli.command("run")
 def run():
     app.run(port=5555, host='0.0.0.0')
 
-@manager.command
+@app.cli.command("initdb")
 def initdb():
     db.drop_all()
     db.create_all()
@@ -20,11 +20,11 @@ def initdb():
     db.session.add(admin)
     db.session.commit()
 
-@manager.command
+@app.cli.command("drop")
 def drop():
     db.drop_all()
 
-@manager.command
+@app.cli.command("insert")
 def insert():
     # software
     m1 = Monitor(name='nike', url='http://dev.nike.com/', introduction='nike plus api')
@@ -46,5 +46,5 @@ def insert():
     db.session.add(m8)
     db.session.commit()
 
-if __name__ == "__main__":
-    manager.run()
+# if __name__ == "__main__":
+#     manager.run()

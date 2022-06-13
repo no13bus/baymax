@@ -2,7 +2,7 @@
 
 import os
 from datetime import timedelta
-from utils import make_dir, INSTANCE_FOLDER_PATH
+from .utils import make_dir, INSTANCE_FOLDER_PATH
 
 
 class BaseConfig(object):
@@ -43,7 +43,7 @@ class DefaultConfig(BaseConfig):
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + INSTANCE_FOLDER_PATH + '/db.sqlite'
     # MYSQL for production.
     #SQLALCHEMY_DATABASE_URI = 'mysql://username:password@server/db?charset=utf8'
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:root@127.0.0.1/baymax?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@127.0.0.1/baymax?charset=utf8'
 
     # Flask-babel: http://pythonhosted.org/Flask-Babel/
     ACCEPT_LANGUAGES = ['zh']
@@ -100,6 +100,10 @@ class DefaultConfig(BaseConfig):
     # fitbit
     FITBIT_KEY = ''
     FITBIT_SECRET = ''
+
+
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_COMMIT_TEARDOWN = True
 
 
 

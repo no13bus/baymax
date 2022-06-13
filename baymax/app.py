@@ -3,8 +3,6 @@
 import os
 
 from flask import Flask, request, render_template
-from flask.ext.babel import Babel
-
 from .config import DefaultConfig
 from .user import User
 from .frontend import frontend
